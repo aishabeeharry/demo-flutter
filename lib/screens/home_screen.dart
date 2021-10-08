@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:state_management/bloc/trip_bloc.dart';
 import 'package:state_management/models/enterprise.dart';
+import 'package:state_management/models/trip.dart';
 import 'package:state_management/widgets/display_text_tile.dart';
 
 import '../widgets/dropdown/dropdown.dart';
@@ -15,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _input = "";
   OverlayEntry? _overlayEntry;
   final GlobalKey _dropdownKey = GlobalKey();
+  StreamSubscription? _subscription;
 
   List<Enterprise> _enterpriseList = [
     new Enterprise(0, 'Actemium'),
@@ -28,15 +33,28 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   Enterprise? _selectedEnterprise;
+  List<Trip>? _trips;
+
+  @override
+  void initState() {
+    super.initState();
+    tripBloc.getTripList();
+    _subscription = tripBloc.tripListPublishSubject.stream.listen((event) {
+      if (event != null) {
+        _trips = event;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _subscription!.cancel();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(""),
-        centerTitle: true,
-        backgroundColor: const Color.fromRGBO(32, 72, 159, 1.0),
-      ),
       body: SafeArea(
         child: Container(
           child: Column(
@@ -94,6 +112,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
+              ),
+
+              // ----------------- BLOC ------------------------------------------
+
+              // ----------------- Using Stream Builder ------------------------------------------
+              Container(
+                padding: EdgeInsets.all(25.0),
+                child: StreamBuilder(
+                  stream: tripBloc.tripListPublishSubject,
+                  builder: (context, AsyncSnapshot<List<Trip>> snapshot) {
+                    if (snapshot.hasData) {
+                      return Container(child: _buildList(snapshot.data));
+                    } else {
+                      return CircularProgressIndicator();
+                    }
+                  },
+                ),
+              ),
+
+              // ---------------- Using stream subscription ------------------------
+              Container(
+                padding: EdgeInsets.all(25.0),
+                child: (_trips != null && _trips!.length > 0)
+                    ? _buildList(_trips)
+                    : CircularProgressIndicator(),
               ),
             ],
           ),
@@ -153,5 +196,38 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _input = _textEditingController.text;
     });
+  }
+
+  Widget _buildList(List<Trip>? data) {
+    return ListView.builder(
+        itemCount: data!.length,
+        shrinkWrap: true,
+        itemBuilder: (context, pos) {
+//          return ListTile(
+//            title: Text(data[pos].name),
+//            subtitle: Text(data[pos].date),
+//          );
+          return ExpansionTile(
+            title: Text(
+              data[pos].name,
+              style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
+            ),
+            children: <Widget>[
+              data[pos].expenses != null && data[pos].expenses!.length > 0
+                  ? ListView.builder(
+                      itemCount: data[pos].expenses!.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(
+                            data[pos].expenses![index].merchantName ?? '',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        );
+                      })
+                  : Container()
+            ],
+          );
+        });
   }
 }

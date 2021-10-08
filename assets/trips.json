@@ -1,0 +1,50 @@
+[
+  {
+    "tripId": 0,
+    "tripName": "Mauritius",
+    "date": "4 February",
+    "expenses": [
+      {
+        "id": 0,
+        "merchantName": "Panarotti",
+        "merchantAddress": "Ebene",
+        "country": "Mauritius",
+        "date": "25/05/2019",
+        "total": "$1000",
+        "tax": "4.68"
+      },
+      {
+        "id": 5,
+        "merchantName": "Pannaroti",
+        "merchantAddress": "Bagatelle",
+        "country": "Mauritius",
+        "date": "25/05/2019",
+        "total": "$1000",
+        "tax": "4.68"
+      }
+    ]
+  },
+  {
+    "tripId": 1,
+    "tripName": "Mauritius",
+    "date": "10 February",
+    "expenses": [
+      {
+        "id": 0,
+        "merchantName": "Panarotti",
+        "merchantAddress": "Ebene",
+        "country": "Mauritius",
+        "date": "25/05/2019",
+        "total": "$1000",
+        "tax": "4.68"
+      }
+    ]
+  },
+  {
+    "tripId": 2,
+    "tripName": "Mauritius",
+    "date": "11 February",
+    "expenses": [
+    ]
+  }
+]
