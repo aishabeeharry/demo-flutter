@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:state_management/bloc/trip_bloc.dart';
+import 'package:state_management/models/ehpgstatus.dart';
 import 'package:state_management/models/enterprise.dart';
 import 'package:state_management/models/trip.dart';
 import 'package:state_management/widgets/display_text_tile.dart';
+import 'package:state_management/widgets/slider.dart';
 
 import '../widgets/dropdown/dropdown.dart';
 import '../widgets/dropdown/dropdown_popup.dart';
@@ -20,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   OverlayEntry? _overlayEntry;
   final GlobalKey _dropdownKey = GlobalKey();
   StreamSubscription? _subscription;
+  int _ehpg = EhpgState.NO.index;
 
   List<Enterprise> _enterpriseList = [
     new Enterprise(0, 'Actemium'),
@@ -39,11 +42,22 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     tripBloc.getTripList();
-    _subscription = tripBloc.tripListPublishSubject.stream.listen((event) {
-      if (event != null) {
-        _trips = event;
-      }
-    });
+    WidgetsBinding.instance!.addPostFrameCallback(_afterLayoutInit);
+//    _subscription = tripBloc.tripListPublishSubject.stream.listen((event) {
+//      if (event != null) {
+//        _trips = event;
+//      }
+//    });
+  }
+
+  void _afterLayoutInit(_) async {
+    if (mounted) {
+      _subscription = tripBloc.tripListPublishSubject.stream.listen((event) {
+        if (event != null) {
+          _trips = event;
+        }
+      });
+    }
   }
 
   @override
@@ -114,6 +128,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
+              Center(
+                child: CustomSlider(
+                    leftText: "Yes",
+                    rightText: "No",
+                    initialValue: _ehpg,
+                    onSliderClick: _handleSliderChange),
+              ),
+
               // ----------------- BLOC ------------------------------------------
 
               // ----------------- Using Stream Builder ------------------------------------------
@@ -132,12 +154,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               // ---------------- Using stream subscription ------------------------
-              Container(
-                padding: EdgeInsets.all(25.0),
-                child: (_trips != null && _trips!.length > 0)
-                    ? _buildList(_trips)
-                    : CircularProgressIndicator(),
-              ),
+//              Container(
+//                padding: EdgeInsets.all(25.0),
+//                child: (_trips != null && _trips!.length > 0)
+//                    ? _buildList(_trips)
+//                    : CircularProgressIndicator(),
+//              ),
             ],
           ),
         ),
@@ -212,6 +234,10 @@ class _HomeScreenState extends State<HomeScreen> {
               data[pos].name,
               style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
             ),
+            subtitle: Text(
+              data[pos].date,
+              style: TextStyle(fontSize: 10.0, fontWeight: FontWeight.w500),
+            ),
             children: <Widget>[
               data[pos].expenses != null && data[pos].expenses!.length > 0
                   ? ListView.builder(
@@ -223,11 +249,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             data[pos].expenses![index].merchantName ?? '',
                             style: TextStyle(fontWeight: FontWeight.w700),
                           ),
+                          subtitle: Text(
+                            data[pos].expenses![index].merchantAddress ?? '',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
                         );
                       })
                   : Container()
             ],
           );
         });
+  }
+
+  void _handleSliderChange(int state) {
+    setState(() {
+      _ehpg = state;
+    });
   }
 }
